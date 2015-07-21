@@ -3,6 +3,7 @@ from unittest import TestCase
 import math
 
 from bfh import Schema, Mapping
+from bfh.exceptions import Invalid
 from bfh.fields import (
     ArrayField,
     BooleanField,
@@ -283,6 +284,32 @@ class TestMappings(TestCase):
 
         transformed = Outer().apply(source).serialize()
         self.assertEqual({"inner": {"goal": 3}}, transformed)
+
+    def test_empty_fields_serialize_as_none_valid_or_no(self):
+        """We aren't making assumptions here. Call validate if you want it."""
+        class FirstSchema(Schema):
+            wow = IntegerField(required=True)
+            umm = IntegerField(required=False)
+
+        class OtherSchema(Schema):
+            cool = IntegerField(required=True)
+            bad = IntegerField(required=True)  # Uh oh
+
+        class Mymap(Mapping):
+            source = FirstSchema
+            target = OtherSchema
+
+            cool = Get('wow')
+            bad = Get('umm')
+
+        source = FirstSchema(wow=1)
+        assert source.validate()
+
+        transformed = Mymap().apply(source)
+        with self.assertRaises(Invalid):
+            transformed.validate()
+
+        self.assertEqual({"cool": 1, "bad": None}, transformed.serialize())
 
 
 class TestInheritance(TestCase):
