@@ -11,6 +11,11 @@ from bfh.transformations import (
     Str,
 )
 
+try:
+    string_type = unicode
+except NameError:
+    string_type = str
+
 
 class TestGet(TestCase):
     def test_can_get_from_dict(self):
@@ -52,7 +57,7 @@ class TestCoerce(TestCase):
         self.assertEqual(my_int, result)
         result = Int(str(my_int))()
         self.assertEqual(my_int, result)
-        result = Int(unicode(my_int))()
+        result = Int(string_type(my_int))()
         self.assertEqual(my_int, result)
         result = Int(float(my_int))()
         self.assertEqual(my_int, result)
@@ -63,7 +68,7 @@ class TestCoerce(TestCase):
         self.assertEqual(my_float, result)
         result = Num(int(my_float))()
         self.assertEqual(1.0, result)
-        result = Num(unicode(my_float))()
+        result = Num(string_type(my_float))()
         self.assertEqual(my_float, result)
 
     def test_can_coerce_unicode(self):

@@ -164,13 +164,15 @@ class TestSchemas(TestCase):
         self.assertEqual(s.serialize(), my_convo)
 
 
-class OneToTwo(Mapping):
-    source = Schema1
-    target = Schema2
-
+class OneToTwoBase(Mapping):
     peas = Get('my_str')
     carrots = Get('my_int')
     beans = Int(Get('another_str'))
+
+
+class OneToTwo(OneToTwoBase):
+    source = Schema1
+    target = Schema2
 
 
 class TwoToOne(Mapping):
@@ -180,12 +182,6 @@ class TwoToOne(Mapping):
     my_str = Get('peas')
     my_int = Get('carrots')
     another_str = Str(Get('beans'))
-
-
-class OneToTwoBasic(Mapping):
-    peas = Get('my_str')
-    carrots = Get('my_int')
-    beans = Int(Get('another_str'))
 
 
 class TestMappings(TestCase):
@@ -210,7 +206,7 @@ class TestMappings(TestCase):
         self.assertEqual(self.original, back_again)
 
     def test_dont_even_need_schemas(self):
-        transformed = OneToTwoBasic().apply(self.original).serialize()
+        transformed = OneToTwoBase().apply(self.original).serialize()
         self.assertEqual(self.expected, transformed)
 
 

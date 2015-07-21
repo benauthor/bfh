@@ -1,5 +1,12 @@
+from __future__ import absolute_import
+
 from .exceptions import Missing
 from .interfaces import TransformationInterface
+
+try:
+    string_type = unicode
+except NameError:
+    string_type = str
 
 __all__ = [
     "All",
@@ -138,7 +145,7 @@ class Num(CoerceType):
 
 class Str(CoerceType):
 
-    target_type = unicode
+    target_type = string_type
 
 
 class Bool(CoerceType):

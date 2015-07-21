@@ -1,8 +1,16 @@
+from __future__ import absolute_import
+
 from datetime import datetime
 from dateutil.parser import parse as parse_date
 
 from .exceptions import Invalid
 from .interfaces import FieldInterface
+
+try:
+    string_type = unicode
+except NameError:
+    string_type = str
+
 
 __all__ = [
     "BooleanField",
@@ -92,7 +100,7 @@ class NumberField(SimpleTypeField):
 
 class UnicodeField(SimpleTypeField):
 
-    field_type = unicode
+    field_type = string_type
 
     def __init__(self, strict=False, **kwargs):
         super(UnicodeField, self).__init__(**kwargs)
@@ -100,7 +108,7 @@ class UnicodeField(SimpleTypeField):
 
     @staticmethod
     def _coerce(value):
-        if isinstance(value, unicode):
+        if isinstance(value, string_type):
             return value
         try:
             return value.decode('utf-8')

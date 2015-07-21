@@ -1,7 +1,9 @@
+from __future__ import absolute_import
+
 from .interfaces import SchemaInterface, MappingInterface
 
-import fields
-import transformations
+from . import fields
+from . import transformations
 
 __all__ = [
     "Schema",
