@@ -38,12 +38,14 @@ class HasFieldsMeta(ABCMeta):
             metaclass, name, bases, attributes, *args, **kwargs
         )
         setattr(new_class, '_fields', {})
+        setattr(new_class, '_field_names', [])
         for name in dir(new_class):
             attribute = getattr(new_class, name)
             if not isinstance(attribute,
                               (FieldInterface, TransformationInterface)):
                 continue
             new_class._fields[name] = attribute
+            new_class._field_names.append(name)
             attribute.field_name = name
         return new_class
 

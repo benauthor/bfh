@@ -32,8 +32,16 @@ class Schema(SchemaInterface):
 
     def serialize(self):
         outd = {}
-        for k, v in self._fields.items():
-            outd[k] = v.serialize(self.__dict__[k])
+        for name in self._field_names:
+            value = self.__dict__[name]
+            field = self._fields.get(name)
+            if hasattr(value, "serialize"):
+                value = value.serialize()
+
+            if hasattr(field, "serialize"):
+                value = field.serialize(value)
+
+            outd[name] = value
 
         return outd
 
@@ -42,15 +50,15 @@ class Schema(SchemaInterface):
                     for k, v in self._fields.items()])
 
 
-class GenericSchema(SchemaInterface):
+class GenericSchema(Schema):
     def __init__(self, as_dict):
         self.__dict__ = as_dict
+        self._field_names = as_dict.keys()
 
     def __get__(self, name):
+        if name not in self._field_names:
+            return None
         return self.__dict__[name]
-
-    def serialize(self):
-        return self.__dict__
 
     def validate(self):
         pass

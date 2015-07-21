@@ -11,12 +11,14 @@ from bfh.fields import (
     UnicodeField
 )
 from bfh.transformations import (
+    All,
     Const,
     Concat,
     Do,
     Get,
     Int,
     Str,
+    Submapping,
 )
 
 
@@ -229,6 +231,21 @@ class TestMappings(TestCase):
             "two": "two",
             "three": 3.0,
         }, transformed)
+
+    def test_can_use_submaps_for_root(self):
+        source = {
+            "flat": 1,
+            "nice": 2
+        }
+
+        class Inner(Mapping):
+            goal = Get("flat")
+
+        class Outer(Mapping):
+            inner = Submapping(Inner, All())
+
+        transformed = Outer().apply(source).serialize()
+        self.assertEqual({"inner": {"goal": 1}}, transformed)
 
 
 class TestInheritance(TestCase):

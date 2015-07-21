@@ -62,7 +62,9 @@ class Subschema(Field):
             instance.__dict__[self.field_name] = value
 
     def serialize(self, value):
-        return value.serialize()
+        if hasattr(value, "serialize"):
+            return value.serialize()
+        return value
 
     def validate(self, value):
         value.validate()

@@ -18,6 +18,7 @@ __all__ = [
     "Do",
     "Int",
     "Str",
+    "Submapping",
 ]
 
 
@@ -114,6 +115,19 @@ class Transformation(TransformationInterface):
 
         self.args = new_args
         return self.function(source)
+
+
+class Submapping(Transformation):
+    def __init__(self, submapping_class, *args):
+        self.submapping_class = submapping_class
+        self.args = args
+
+    @property
+    def value(self):
+        return self.args[0]
+
+    def function(self, source=None):
+        return self.submapping_class().apply(self.value)
 
 
 class Const(Transformation):
