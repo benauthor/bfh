@@ -1,7 +1,6 @@
 from __future__ import absolute_import
 
 from datetime import datetime
-from dateutil.parser import parse as parse_date
 
 from .exceptions import Invalid
 from .interfaces import FieldInterface
@@ -155,12 +154,3 @@ class IsoDateString(DatetimeField):
 
     def serialize(self, value):
         return value.isoformat()
-
-#     def _coerce(self, value):
-#         if isinstance(value, int):
-#             return datetime.utcfromtimestamp(value)
-#         elif isinstance(value, basestring):
-#             return parse_date(value)
-
-#         else:
-#             raise TypeError("Could not coerce %s" % value)

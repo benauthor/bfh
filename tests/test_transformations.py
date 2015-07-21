@@ -1,3 +1,4 @@
+import datetime
 from unittest import TestCase
 
 from bfh.exceptions import Missing
@@ -10,6 +11,8 @@ from bfh.transformations import (
     Int,
     Num,
     Str,
+    ParseDate,
+    utc,
 )
 
 try:
@@ -143,3 +146,25 @@ class TestMixedTransformations(TestCase):
         int_concatter = Int(Concat("1", Str(Get("bar")), "3"))
         result = int_concatter(original)
         self.assertEqual(123, result)
+
+
+class TestParseDate(TestCase):
+    def test_can_parse_timestamp(self):
+        my_birthday = 397994400
+        result = ParseDate(my_birthday)()
+        self.assertEqual(datetime.datetime(1982, 8, 12, 10, tzinfo=utc),
+                         result)
+
+    def test_can_parse_string(self):
+        my_birthdays = [
+            u'1982-08-12T10:00:00',
+            u'1982-08-12T10:00:00Z',
+            u'1982-08-12T06:00:00-04:00',
+            "Fri Aug 12 10:00:00 +0000 1982",
+            "Friday, August 12, 1982, 6AM EST"
+        ]
+
+        for birthday in my_birthdays:
+            result = ParseDate(birthday)()
+            self.assertEqual(datetime.datetime(1982, 8, 12, 10, tzinfo=utc),
+                             result)

@@ -1,5 +1,8 @@
 from __future__ import absolute_import
 
+from datetime import datetime, timedelta, tzinfo
+from dateutil.parser import parse as parse_date
+
 from .exceptions import Missing
 from .interfaces import TransformationInterface
 
@@ -20,6 +23,22 @@ __all__ = [
     "Str",
     "Submapping",
 ]
+
+
+class UTC(tzinfo):
+
+    OFFSET = timedelta(0)
+
+    def utcoffset(self, dt):
+        return self.OFFSET
+
+    def tzname(self, dt):
+        return "UTC"
+
+    def dst(self, dt):
+        return self.OFFSET
+
+utc = UTC()
 
 
 class All(TransformationInterface):
@@ -195,3 +214,29 @@ class Do(Transformation):
 
     def function(self, source=None):
         return self.to_call(*self.call_args)
+
+
+class ParseDate(Transformation):
+
+    DEFAULT_TIMEZONE = utc
+
+    @property
+    def value(self):
+        return self.args[0]
+
+    @property
+    def tz(self):
+        return self.kwargs.get("tz", self.DEFAULT_TIMEZONE)
+
+    def function(self, source=None):
+        if isinstance(self.value, int):
+            date = datetime.utcfromtimestamp(self.value)
+        elif isinstance(self.value, basestring):
+            date = parse_date(self.value)
+        else:
+            raise TypeError("Could not parse %s" % self.value)
+
+        if date.tzinfo is None:
+            date = date.replace(tzinfo=self.tz)
+
+        return date
