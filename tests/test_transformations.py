@@ -3,6 +3,7 @@ from unittest import TestCase
 from bfh.exceptions import Missing
 from bfh.transformations import (
     Bool,
+    Const,
     Concat,
     Do,
     Get,

@@ -38,8 +38,6 @@ class HasFieldsMeta(ABCMeta):
             metaclass, name, bases, attributes, *args, **kwargs
         )
         setattr(new_class, '_fields', {})
-        if name == "Schema3":
-            import ipdb;ipdb.set_trace()
         for name in dir(new_class):
             attribute = getattr(new_class, name)
             if not isinstance(attribute,

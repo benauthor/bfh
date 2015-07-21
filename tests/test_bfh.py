@@ -11,6 +11,7 @@ from bfh.fields import (
     UnicodeField
 )
 from bfh.transformations import (
+    Const,
     Concat,
     Do,
     Get,
@@ -208,6 +209,26 @@ class TestMappings(TestCase):
     def test_dont_even_need_schemas(self):
         transformed = OneToTwoBase().apply(self.original).serialize()
         self.assertEqual(self.expected, transformed)
+
+    def test_constants_in_mapping(self):
+        class Consistent(Mapping):
+            one = Const(1)
+            two = Const("two")
+            three = Const(3.0)
+
+        source = {
+            "one": "doesn't",
+            "two": "matter",
+            "three": "what's here",
+            "four": "amirite"
+        }
+
+        transformed = Consistent().apply(source).serialize()
+        self.assertEqual({
+            "one": 1,
+            "two": "two",
+            "three": 3.0,
+        }, transformed)
 
 
 class TestInheritance(TestCase):

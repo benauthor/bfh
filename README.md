@@ -43,3 +43,9 @@ transformed['diameter']
 ## Validation
 
 It's not really a validation library, OK? There are lots of those out there, so we just got the basics here.
+
+## Build Status
+
+[![Build Status](https://travis-ci.org/benauthor/bfh.svg?branch=master)](https://travis-ci.org/benauthor/bfh)
+
+Curretly failing on Py3k ...

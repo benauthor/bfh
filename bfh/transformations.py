@@ -11,6 +11,7 @@ except NameError:
 __all__ = [
     "All",
     "Get",
+    "Const",
     "Concat",
     "Bool",
     "Num",
@@ -113,6 +114,15 @@ class Transformation(TransformationInterface):
 
         self.args = new_args
         return self.function(source)
+
+
+class Const(Transformation):
+    @property
+    def value(self):
+        return self.args[0]
+
+    def function(self, source=None):
+        return self.value
 
 
 class CoerceType(Transformation):
