@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
 from unittest import TestCase
 
+from bfh import Schema
 from bfh.exceptions import Invalid
 from bfh.fields import (
     IntegerField,
     UnicodeField,
     ArrayField,
+    Subschema
 )
 
 
@@ -76,3 +78,20 @@ class TestFieldValidation(TestCase):
 
         with self.assertRaises(Invalid):
             field.validate(1)
+
+
+class TestFieldSerialization(TestCase):
+    def test_array_serialization(self):
+        field = ArrayField(int)
+        flat = [1, 2, 3]
+        self.assertEqual(flat, field.serialize(flat))
+
+        empty = None
+        self.assertEqual([], field.serialize(empty))
+
+        class SomeSchema(Schema):
+            wat = IntegerField()
+
+        field = ArrayField(Subschema)
+        source = [SomeSchema(wat=1), SomeSchema(wat=2)]
+        self.assertEqual([{"wat": 1}, {"wat": 2}], field.serialize(source))

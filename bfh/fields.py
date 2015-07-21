@@ -154,6 +154,8 @@ class ArrayField(SimpleTypeField):
         return True
 
     def serialize(self, value):
+        if value is None:
+            return []
         return [self._flatten(i) for i in value]
 
 
