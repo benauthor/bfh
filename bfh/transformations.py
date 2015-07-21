@@ -1,6 +1,28 @@
 from .exceptions import Missing
 from .interfaces import TransformationInterface
 
+__all__ = [
+    "All",
+    "Get",
+    "Concat",
+    "Bool",
+    "Num",
+    "Do",
+    "Int",
+    "Str",
+]
+
+
+class All(TransformationInterface):
+    def __init__(self):
+        pass
+
+    def __call__(self, source):
+        return self.function(source)
+
+    def function(self, source):
+        return source
+
 
 class Get(TransformationInterface):
     """

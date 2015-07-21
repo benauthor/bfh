@@ -33,7 +33,8 @@ class Schema(SchemaInterface):
         return outd
 
     def validate(self):
-        return all([f.validate() for f in self._fields.values()])
+        return all([v.validate(getattr(self, k))
+                    for k, v in self._fields.items()])
 
 
 class GenericSchema(SchemaInterface):
