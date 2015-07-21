@@ -5,6 +5,10 @@ import math
 from bfh import Schema, Mapping
 from bfh.fields import (
     ArrayField,
+    BooleanField,
+    DatetimeField,
+    DictField,
+    IsoDateString,
     IntegerField,
     NumberField,
     Subschema,

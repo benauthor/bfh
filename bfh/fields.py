@@ -136,10 +136,22 @@ class ArrayField(SimpleTypeField):
 
     field_type = list
 
+    def __init__(self, array_type=None, **kwargs):
+        super(ArrayField, self).__init__(**kwargs)
+        self.array_type = array_type
+
     def _flatten(self, value):
         if hasattr(value, 'serialize'):
             return value.serialize()
         return value
+
+    def validate(self, value):
+        super(ArrayField, self).validate(value)
+        if self.array_type is not None and value is not None:
+            for val in value:
+                if not isinstance(val, self.array_type):
+                    raise Invalid("%s is not a %s" % (val, self.array_type))
+        return True
 
     def serialize(self, value):
         return [self._flatten(i) for i in value]

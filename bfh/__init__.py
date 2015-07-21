@@ -68,10 +68,11 @@ class Mapping(MappingInterface):
 
     def apply(self, blob):
         """
-        This is going to take blob and insert it into source schema.
+        This is going to take blob and create an instance of source schema.
 
-        TODO validate (optionally) if source and target specified
-        TODO allow to be used without specified schemas
+        If no source schema is specified, use a generic schema.
+
+        TODO validate (optionally) if source and target specified?
         """
         if self.source is None:
             loaded_source = blob

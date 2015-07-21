@@ -50,3 +50,29 @@ class TestFieldValidation(TestCase):
 
         with self.assertRaises(Invalid):
             field.validate('not strict enough')
+
+    def test_array_validation(self):
+        field = ArrayField(int)
+
+        assert field.validate([1, 2, 3])
+
+        with self.assertRaises(Invalid):
+            field.validate(["a", 1, 1.0])
+
+        with self.assertRaises(Invalid):
+            field.validate(None)
+
+        with self.assertRaises(Invalid):
+            field.validate({1: "A", 2: "B"})
+
+        with self.assertRaises(Invalid):
+            field.validate("hiya")
+
+        field = ArrayField(int, required=False)
+
+        assert field.validate([1, 2, 3])
+
+        assert field.validate(None)
+
+        with self.assertRaises(Invalid):
+            field.validate(1)
