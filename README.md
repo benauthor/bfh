@@ -39,3 +39,7 @@ transformed['name']
 transformed['diameter']
 # 70.71067811865476
 ```
+
+## Validation
+
+It's not really a validation library, OK? There are lots of those out there, so we just got the basics here.
