@@ -80,7 +80,10 @@ class SimpleTypeField(Field):
     def validate(self, value):
         super(SimpleTypeField, self).validate(value)
         if not self._valid(value):
-            raise Invalid("%s is not a valid %s" % (value, self.field_type))
+            field_name = getattr(self, "field_name", "unnamed")
+            raise Invalid("%s: %s is not a valid %s" % (field_name,
+                                                        value,
+                                                        self.field_type))
         return True
 
 

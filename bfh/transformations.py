@@ -49,6 +49,8 @@ class All(TransformationInterface):
         return self.function(source)
 
     def function(self, source):
+        if hasattr(source, "serialize"):
+            return source.serialize()
         return source
 
 
