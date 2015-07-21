@@ -238,6 +238,16 @@ class TestMappings(TestCase):
             "nice": 2
         }
 
+        class Source(Schema):
+            flat = IntegerField()
+            nice = IntegerField()
+
+        class TargetInner(Schema):
+            goal = IntegerField()
+
+        class Target(Schema):
+            inner = Subschema(TargetInner)
+
         class Inner(Mapping):
             goal = Get("flat")
 
@@ -246,6 +256,29 @@ class TestMappings(TestCase):
 
         transformed = Outer().apply(source).serialize()
         self.assertEqual({"inner": {"goal": 1}}, transformed)
+
+        class OuterWithSourceTarget(Outer):
+            source = Source
+            target = Target
+
+        transformed = OuterWithSourceTarget().apply(source).serialize()
+        self.assertEqual({"inner": {"goal": 1}}, transformed)
+
+    def test_can_pass_part_to_submap(self):
+        source = {
+            "nested": {
+                "okay": 3
+            }
+        }
+
+        class Inner(Mapping):
+            goal = Get("okay")
+
+        class Outer(Mapping):
+            inner = Submapping(Inner, Get("nested"))
+
+        transformed = Outer().apply(source).serialize()
+        self.assertEqual({"inner": {"goal": 3}}, transformed)
 
 
 class TestInheritance(TestCase):
