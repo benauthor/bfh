@@ -4,6 +4,7 @@ from unittest import TestCase
 from bfh import Schema
 from bfh.exceptions import Invalid
 from bfh.fields import (
+    DictField,
     IntegerField,
     UnicodeField,
     ArrayField,
@@ -79,6 +80,36 @@ class TestFieldValidation(TestCase):
         with self.assertRaises(Invalid):
             field.validate(1)
 
+    def test_dict_validation(self):
+        field = DictField()
+
+        assert field.validate({})
+
+        assert field.validate({"foo": "bar"})
+
+        with self.assertRaises(Invalid):
+            field.validate(1)
+
+        with self.assertRaises(Invalid):
+            field.validate([])
+
+        with self.assertRaises(Invalid):
+            field.validate(None)
+
+        class SomeSchema(Schema):
+            inner = IntegerField()
+
+        assert field.validate(SomeSchema(inner=1))
+
+        with self.assertRaises(Invalid):
+            field.validate(SomeSchema(inner="wow"))
+
+        field = DictField(required=False)
+
+        assert field.validate({"foo": "bar"})
+
+        assert field.validate(None)
+
 
 class TestFieldSerialization(TestCase):
     def test_array_serialization(self):
@@ -95,3 +126,14 @@ class TestFieldSerialization(TestCase):
         field = ArrayField(Subschema)
         source = [SomeSchema(wat=1), SomeSchema(wat=2)]
         self.assertEqual([{"wat": 1}, {"wat": 2}], field.serialize(source))
+
+    def test_dict_serialization(self):
+        field = DictField()
+        source = {"wow": "cool"}
+        self.assertEqual(source, field.serialize(source))
+
+        class SomeSchema(Schema):
+            great = ArrayField(int)
+
+        source = SomeSchema(great=[1, 2, 3])
+        self.assertEqual({"great": [1, 2, 3]}, field.serialize(source))

@@ -3,7 +3,7 @@ from __future__ import absolute_import
 from datetime import datetime
 
 from .exceptions import Invalid
-from .interfaces import FieldInterface
+from .interfaces import FieldInterface, SchemaInterface
 
 try:
     string_type = unicode
@@ -129,7 +129,18 @@ class UnicodeField(SimpleTypeField):
 
 class DictField(SimpleTypeField):
 
-    field_type = dict
+    field_type = (dict, SchemaInterface)
+
+    def validate(self, value):
+        super(DictField, self).validate(value)
+        if hasattr(value, "validate"):
+            value.validate()
+        return True
+
+    def serialize(self, value):
+        if hasattr(value, "serialize"):
+            return value.serialize()
+        return value
 
 
 class ArrayField(SimpleTypeField):
