@@ -14,13 +14,16 @@ __all__ = [
 class Schema(SchemaInterface):
 
     def __init__(self, *args, **kwargs):
+        # when a dict is passed as positional argument, transform to kwargs
         if len(args) == 1 and isinstance(args[0], dict):
             return self.__init__(**dict(args[0], **kwargs))
 
+        # init any subschemas
         for k, v in self._fields.items():
             if isinstance(v, fields.Subschema):
                 setattr(self, k, v.subschema_class())
 
+        # init values passed as kwargs
         for k, v in kwargs.items():
             if hasattr(self, k):
                 setattr(self, k, v)

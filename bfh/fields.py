@@ -23,6 +23,8 @@ class Field(FieldInterface):
         self.required = required
 
     def __get__(self, instance, cls=None):
+        if instance is None:
+            return self
         return instance.__dict__.get(self.field_name)
 
     def __set__(self, instance, value):

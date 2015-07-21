@@ -214,6 +214,55 @@ class TestMappings(TestCase):
         self.assertEqual(self.expected, transformed)
 
 
+class TestInheritance(TestCase):
+    """Verify that the metaprogramming tricks didn't go awry"""
+    def test_schemas_can_inherit(self):
+        class SchemaA(Schema):
+            peas = IntegerField()
+
+        class SchemaB(SchemaA):
+            turnips = IntegerField()
+
+        assert isinstance(SchemaB.peas, IntegerField)
+        assert isinstance(SchemaB.turnips, IntegerField)
+
+        s = SchemaB()
+        assert hasattr(s, "peas")
+        assert "peas" in s._fields
+        assert hasattr(s, "turnips")
+        assert "turnips" in s._fields
+
+    def test_mappings_can_inherit(self):
+        class SchemaA(Schema):
+            beans = IntegerField()
+            carrots = IntegerField()
+
+        class SchemaB(Schema):
+            legumes = IntegerField()
+            root_veg = IntegerField()
+
+        class MappingA(Mapping):
+            source = SchemaA
+            legumes = Get('beans')
+
+        class MappingB(MappingA):
+            target = SchemaB
+            root_veg = Get('carrots')
+
+        assert isinstance(MappingB.legumes, Get)
+        assert isinstance(MappingB.root_veg, Get)
+        assert MappingB.source is SchemaA
+        assert MappingB.target is SchemaB
+
+        m = MappingB()
+        assert hasattr(m, "legumes")
+        assert "legumes" in m._fields
+        assert hasattr(m, "root_veg")
+        assert "root_veg" in m._fields
+        assert m.source is SchemaA
+        assert m.target is SchemaB
+
+
 class SquarePeg(Schema):
     id = IntegerField()
     name = UnicodeField()
