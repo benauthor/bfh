@@ -161,7 +161,7 @@ class TestParseDate(TestCase):
             u'1982-08-12T10:00:00Z',
             u'1982-08-12T06:00:00-04:00',
             "Fri Aug 12 10:00:00 +0000 1982",
-            "Friday, August 12, 1982, 6AM EDT"
+            "Friday, August 12, 1982, 10AM UTC"
         ]
 
         for birthday in my_birthdays:
