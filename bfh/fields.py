@@ -42,8 +42,11 @@ class Field(FieldInterface):
 
     def validate(self, value):
         if self.required and value is None:
-            raise Invalid("A value is required")
+            raise Invalid("%s: a value is required" % self.get_field_name())
         return True
+
+    def get_field_name(self):
+        return getattr(self, "field_name", "unnamed")
 
 
 class Subschema(Field):
@@ -80,8 +83,7 @@ class SimpleTypeField(Field):
     def validate(self, value):
         super(SimpleTypeField, self).validate(value)
         if not self._valid(value):
-            field_name = getattr(self, "field_name", "unnamed")
-            raise Invalid("%s: %s is not a valid %s" % (field_name,
+            raise Invalid("%s: %s is not a valid %s" % (self.get_field_name(),
                                                         value,
                                                         self.field_type))
         return True
