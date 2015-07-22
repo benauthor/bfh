@@ -42,11 +42,16 @@ class Field(FieldInterface):
 
     def validate(self, value):
         if self.required and value is None:
-            raise Invalid("%s: a value is required" % self.get_field_name())
+            raise Invalid("%s: a value is required" % self.field_name)
         return True
 
-    def get_field_name(self):
-        return getattr(self, "field_name", "unnamed")
+    @property
+    def field_name(self):
+        return getattr(self, "_field_name", "unnamed")
+
+    @field_name.setter
+    def field_name(self, value):
+        self._field_name = value
 
 
 class Subschema(Field):
@@ -83,7 +88,7 @@ class SimpleTypeField(Field):
     def validate(self, value):
         super(SimpleTypeField, self).validate(value)
         if not self._valid(value):
-            raise Invalid("%s: %s is not a valid %s" % (self.get_field_name(),
+            raise Invalid("%s: %s is not a valid %s" % (self.field_name,
                                                         value,
                                                         self.field_type))
         return True
@@ -112,14 +117,13 @@ class UnicodeField(SimpleTypeField):
         super(UnicodeField, self).__init__(**kwargs)
         self.strict = strict
 
-    @staticmethod
-    def _coerce(value):
+    def _coerce(self, value):
         if isinstance(value, string_type):
             return value
         try:
             return value.decode('utf-8')
         except AttributeError:
-            raise Invalid("%s is not a string" % value)
+            raise Invalid("%s: %s is not a string" % (self.field_name, value))
 
     def validate(self, value):
         if self.strict:
