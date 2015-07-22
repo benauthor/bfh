@@ -157,7 +157,9 @@ class ObjectField(SimpleTypeField):
 
 
 class ArrayField(SimpleTypeField):
-
+    """
+    N.B. array_type is a class, not an instance
+    """
     field_type = (list, tuple)
 
     def __init__(self, array_type=None, **kwargs):
@@ -169,12 +171,29 @@ class ArrayField(SimpleTypeField):
             return value.serialize()
         return value
 
-    def validate(self, value):
-        super(ArrayField, self).validate(value)
-        if self.array_type is not None and value is not None:
-            for val in value:
+    @property
+    def is_schema_type(self):
+        return issubclass(self.array_type, SchemaInterface)
+
+    def validate(self, items):
+        # blech... it's not a validation lib. it's not a validation lib.
+        super(ArrayField, self).validate(items)
+        if self.is_schema_type:
+            for val in items:
+                if isinstance(val, self.array_type):
+                    return val.validate()
+                if isinstance(val, SchemaInterface):  # wrong schema
+                    raise Invalid("%s is not a %s" % (val, self.array_type))
+
+                # val is an object literal. see if it matches schema.
+                in_schema = self.array_type(val)
+                return in_schema.validate()
+
+        elif self.array_type is not None and items is not None:
+            for val in items:
                 if not isinstance(val, self.array_type):
                     raise Invalid("%s is not a %s" % (val, self.array_type))
+
         return True
 
     def serialize(self, value):

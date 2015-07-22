@@ -89,6 +89,24 @@ class TestFieldValidation(TestCase):
         with self.assertRaises(Invalid):
             field.validate(1)
 
+        class SomeSchema(Schema):
+            good = IntegerField()
+
+        field = ArrayField(SomeSchema)
+
+        assert field.validate([SomeSchema(good=1)])
+
+        assert field.validate([{"good": 1}])
+
+        with self.assertRaises(Invalid):
+            field.validate([SomeSchema(good="bad")])
+
+        with self.assertRaises(Invalid):
+            field.validate([{"good": "bad"}])
+
+        with self.assertRaises(Invalid):
+            field.validate([{"wat": "whatever"}])
+
     def test_object_validation(self):
         field = ObjectField()
 
