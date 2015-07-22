@@ -17,7 +17,7 @@ __all__ = [
     "Subschema",
     "IntegerField",
     "NumberField",
-    "DictField",
+    "ObjectField",
     "ArrayField",
     "UnicodeField",
     "DatetimeField",
@@ -137,12 +137,12 @@ class UnicodeField(SimpleTypeField):
             return value
 
 
-class DictField(SimpleTypeField):
+class ObjectField(SimpleTypeField):
 
     field_type = (dict, SchemaInterface)
 
     def validate(self, value):
-        super(DictField, self).validate(value)
+        super(ObjectField, self).validate(value)
         if hasattr(value, "validate"):
             value.validate()
         return True

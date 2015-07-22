@@ -8,7 +8,7 @@ from bfh.fields import (
     ArrayField,
     BooleanField,
     DatetimeField,
-    DictField,
+    ObjectField,
     IsoDateString,
     IntegerField,
     NumberField,

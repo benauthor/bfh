@@ -4,7 +4,7 @@ from unittest import TestCase
 from bfh import Schema
 from bfh.exceptions import Invalid
 from bfh.fields import (
-    DictField,
+    ObjectField,
     IntegerField,
     UnicodeField,
     ArrayField,
@@ -90,7 +90,7 @@ class TestFieldValidation(TestCase):
             field.validate(1)
 
     def test_dict_validation(self):
-        field = DictField()
+        field = ObjectField()
 
         assert field.validate({})
 
@@ -113,7 +113,7 @@ class TestFieldValidation(TestCase):
         with self.assertRaises(Invalid):
             field.validate(SomeSchema(inner="wow"))
 
-        field = DictField(required=False)
+        field = ObjectField(required=False)
 
         assert field.validate({"foo": "bar"})
 
@@ -147,7 +147,7 @@ class TestFieldSerialization(TestCase):
         self.assertEqual([{"wat": 1}, {"wat": 2}], field.serialize(source))
 
     def test_dict_serialization(self):
-        field = DictField()
+        field = ObjectField()
 
         self.assertEqual(None, field.serialize(None))
 
