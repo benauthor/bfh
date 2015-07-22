@@ -178,6 +178,9 @@ class ArrayField(SimpleTypeField):
     def validate(self, items):
         # blech... it's not a validation lib. it's not a validation lib.
         super(ArrayField, self).validate(items)
+        if not self.required and items in (None, [], tuple()):
+            return True
+
         if self.is_schema_type:
             for val in items:
                 if isinstance(val, self.array_type):

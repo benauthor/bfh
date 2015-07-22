@@ -92,11 +92,13 @@ class TestFieldValidation(TestCase):
         class SomeSchema(Schema):
             good = IntegerField()
 
-        field = ArrayField(SomeSchema)
+        field = ArrayField(SomeSchema, required=False)
 
         assert field.validate([SomeSchema(good=1)])
 
         assert field.validate([{"good": 1}])
+
+        assert field.validate(None)
 
         with self.assertRaises(Invalid):
             field.validate([SomeSchema(good="bad")])
@@ -106,6 +108,7 @@ class TestFieldValidation(TestCase):
 
         with self.assertRaises(Invalid):
             field.validate([{"wat": "whatever"}])
+
 
     def test_object_validation(self):
         field = ObjectField()
