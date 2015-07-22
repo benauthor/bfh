@@ -131,9 +131,10 @@ class UnicodeField(SimpleTypeField):
         return super(UnicodeField, self).validate(self._coerce(value))
 
     def serialize(self, value):
-        if self.strict:
+        try:
+            return self._coerce(value)
+        except Invalid:  # we are not in the business of validation here
             return value
-        return self._coerce(value)
 
 
 class DictField(SimpleTypeField):
@@ -154,7 +155,7 @@ class DictField(SimpleTypeField):
 
 class ArrayField(SimpleTypeField):
 
-    field_type = list
+    field_type = (list, tuple)
 
     def __init__(self, array_type=None, **kwargs):
         super(ArrayField, self).__init__(**kwargs)
@@ -174,9 +175,9 @@ class ArrayField(SimpleTypeField):
         return True
 
     def serialize(self, value):
-        if value is None:
-            return []
-        return [self._flatten(i) for i in value]
+        if isinstance(value, self.field_type):
+            return [self._flatten(i) for i in value]
+        return value
 
 
 class DatetimeField(SimpleTypeField):
@@ -187,4 +188,7 @@ class DatetimeField(SimpleTypeField):
 class IsoDateString(DatetimeField):
 
     def serialize(self, value):
-        return value.isoformat()
+        try:
+            return value.isoformat()
+        except AttributeError:
+            return value

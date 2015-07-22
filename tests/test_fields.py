@@ -121,13 +121,23 @@ class TestFieldValidation(TestCase):
 
 
 class TestFieldSerialization(TestCase):
+    """
+    Tests serialization for field types.
+
+    N.B. serialization is not validation. In general we should pass invalid
+    data through untouched.
+    """
     def test_array_serialization(self):
         field = ArrayField(int)
+
         flat = [1, 2, 3]
         self.assertEqual(flat, field.serialize(flat))
 
-        empty = None
-        self.assertEqual([], field.serialize(empty))
+        self.assertEqual(None, field.serialize(None))
+
+        self.assertEqual([], field.serialize([]))
+
+        self.assertEqual("wow", field.serialize("wow"))
 
         class SomeSchema(Schema):
             wat = IntegerField()
@@ -138,6 +148,13 @@ class TestFieldSerialization(TestCase):
 
     def test_dict_serialization(self):
         field = DictField()
+
+        self.assertEqual(None, field.serialize(None))
+
+        self.assertEqual([], field.serialize([]))
+
+        self.assertEqual("wow", field.serialize("wow"))
+
         source = {"wow": "cool"}
         self.assertEqual(source, field.serialize(source))
 
@@ -146,3 +163,20 @@ class TestFieldSerialization(TestCase):
 
         source = SomeSchema(great=[1, 2, 3])
         self.assertEqual({"great": [1, 2, 3]}, field.serialize(source))
+
+    def test_unicode_serialization(self):
+        field = UnicodeField()
+
+        assert field.serialize(u'wow ☃')
+
+        assert field.serialize('still ok')
+
+        assert field.serialize(1.0)
+
+        assert field.serialize(None) is None
+
+        field = UnicodeField(strict=True)
+
+        assert field.serialize(u'nice snowman ☃')
+
+        assert field.serialize('not strict enough')
