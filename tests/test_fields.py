@@ -47,6 +47,15 @@ class TestFieldValidation(TestCase):
         with self.assertRaises(Invalid):
             field.validate(None)
 
+        field = UnicodeField(required=False)
+
+        assert field.validate(u'wow ☃')
+
+        assert field.validate(None)
+
+        with self.assertRaises(Invalid):
+            field.validate(1)
+
         field = UnicodeField(strict=True)
 
         assert field.validate(u'nice snowman ☃')

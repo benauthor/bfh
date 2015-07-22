@@ -126,7 +126,7 @@ class UnicodeField(SimpleTypeField):
             raise Invalid("%s: %s is not a string" % (self.field_name, value))
 
     def validate(self, value):
-        if self.strict:
+        if self.strict or (value is None and not self.required):
             return super(UnicodeField, self).validate(value)
         return super(UnicodeField, self).validate(self._coerce(value))
 
