@@ -25,7 +25,7 @@ class TransformationInterface(object):
     __metaclass__ = ABCMeta
 
     @abstractmethod
-    def function(self, field, *args, **kwargs):
+    def function(self, whole_obj, *call_args, **kwargs):
         """
 
         """

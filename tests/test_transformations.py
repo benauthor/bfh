@@ -105,7 +105,7 @@ class TestCoerce(TestCase):
         result = Bool(0)()
         self.assertIs(False, result)
         result = Bool(None)()
-        self.assertIs(False, result)
+        self.assertIs(None, result)
 
     def test_can_nest_coercion(self):
         my_int = 1
@@ -229,6 +229,23 @@ class TestSubmapping(TestCase):
 
         transformed = Outer().apply(source).serialize()
         self.assertEqual({"inner": {"goal": 3}}, transformed)
+
+
+class TestIdempotence(TestCase):
+    def test_idempotent(self):
+        class Hm(Mapping):
+            wow = Int(Get('wow'), required=False)
+
+        first = {"wow": 1}
+        second = {}
+        third = {"wow": 3}
+        result1 = Hm().apply(first).serialize()
+        result2 = Hm().apply(second).serialize()
+        result3 = Hm().apply(third).serialize()
+
+        assert result1 == first
+        assert result2 == {"wow": None}  # TODO remove null keys or leave them in? make that an option?
+        assert result3 == third
 
 
 class TestMany(TestCase):

@@ -77,7 +77,7 @@ class Get(TransformationInterface):
         Missing if `required` is false
     """
     def __init__(self, *args, **kwargs):
-        self.args = args
+        self.path = args
         self.kwargs = kwargs
         if kwargs.get('required') is None:
             self.required = False
@@ -86,10 +86,6 @@ class Get(TransformationInterface):
 
     def __call__(self, source):
         return self.function(source)
-
-    @property
-    def path(self):
-        return self.args
 
     def _get_from_dict(self, source, path):
         if not self.required:
@@ -126,82 +122,73 @@ class Transformation(TransformationInterface):
     def __init__(self, *args, **kwargs):
         self.args = args
         self.kwargs = kwargs
+        if kwargs.get('required') is None:
+            self.required = False
+        else:
+            self.required = kwargs.get('required')
 
     def __call__(self, source=None):
-        new_args = []
+        call_args = []
         for arg in self.args:
             if isinstance(arg, TransformationInterface):
-                new_args.append(arg(source))
+                call_args.append(arg(source))
             else:
-                new_args.append(arg)
+                call_args.append(arg)
 
-        self.args = new_args
-        return self.function(source)
+        # self.args = new_args
+        return self.function(source, *call_args)
 
 
 class Submapping(Transformation):
+
     def __init__(self, submapping_class, *args):
         self.submapping_class = submapping_class
         self.args = args
 
-    def function(self, source=None):
-        return self.submapping_class().apply(self.args[0])
+    def function(self, source, *call_args):  # source ignored
+        return self.submapping_class().apply(call_args[0])
+
+
+def _many_items(call_args):
+    if len(call_args) > 1:
+        return call_args
+
+    if len(call_args) == 1 and isinstance(call_args[0], (list, tuple)):
+        return call_args[0]
+
+    elif len(call_args) == 1:
+        return [call_args[0]]
+
+    else:
+        return []
 
 
 class ManySubmap(Submapping):
-    @property
-    def items(self):
-        if len(self.args) > 1:
-            return self.args
 
-        if len(self.args) == 1 and isinstance(self.args[0], (list, tuple)):
-            return self.args[0]
-
-        elif len(self.args) == 1:
-            return [self.args[0]]
-
-        else:
-            return []
-
-    def function(self, source=None):
+    def function(self, source, *call_args):  # source ignored
         return [self.submapping_class().apply(item).serialize()
-                for item in self.items]
+                for item in _many_items(call_args)]
 
 
 class Many(Transformation):
+
     def __init__(self, subtrans, *args, **kwargs):
         self.subtrans = subtrans  # Transformation
         self.args = args
         self.kwargs = kwargs
 
-    @property
-    def items(self):
-        if len(self.args) > 1:
-            return self.args
-
-        if len(self.args) == 1 and isinstance(self.args[0], (list, tuple)):
-            return self.args[0]
-
-        elif len(self.args) == 1:
-            return [self.args[0]]
-
-        else:
-            return []
-
-    def function(self, source=None):
+    def function(self, source, *call_args):
         if isinstance(self.subtrans, Submapping):
             raise ValueError("Can't Many(Submapping). Use Manymap instead.")
 
-        return [self.subtrans(item, **self.kwargs)() for item in self.items]
+        return [self.subtrans(item, **self.kwargs)()
+                for item in _many_items(call_args)]
 
 
 class Const(Transformation):
-    @property
-    def value(self):
-        return self.args[0]
 
-    def function(self, source=None):
-        return self.value
+    def function(self, source, *call_args):  # source ignored
+        return call_args[0]
 
 
 class CoerceType(Transformation):
@@ -210,16 +197,17 @@ class CoerceType(Transformation):
 
     """
 
+    null_types = (None,)
+
     @property
     def target_type(self):
         raise NotImplementedError("Specify a type")
 
-    @property
-    def value(self):
-        return self.args[0]
-
-    def function(self, source=None):
-        return self.target_type(self.value)
+    def function(self, source, *call_args):  # source ignored
+        value = call_args[0]
+        if not self.required and value in self.null_types:
+            return value
+        return self.target_type(value)
 
 
 class Int(CoerceType):
@@ -236,6 +224,8 @@ class Str(CoerceType):
 
     target_type = string_type
 
+    null_types = (None, "")
+
 
 class Bool(CoerceType):
 
@@ -244,22 +234,14 @@ class Bool(CoerceType):
 
 class Concat(Transformation):
 
-    def function(self, source=None):
-        return "".join(self.args)
+    def function(self, source, *call_args):  # source ignored
+        return "".join(call_args)
 
 
 class Do(Transformation):
 
-    @property
-    def to_call(self):
-        return self.args[0]
-
-    @property
-    def call_args(self):
-        return self.args[1:]
-
-    def function(self, source=None):
-        return self.to_call(*self.call_args)
+    def function(self, source, *call_args):  # source ignored
+        return call_args[0](*call_args[1:])
 
 
 class ParseDate(Transformation):
@@ -267,20 +249,17 @@ class ParseDate(Transformation):
     DEFAULT_TIMEZONE = utc
 
     @property
-    def value(self):
-        return self.args[0]
-
-    @property
     def tz(self):
         return self.kwargs.get("tz", self.DEFAULT_TIMEZONE)
 
-    def function(self, source=None):
-        if isinstance(self.value, int):
-            date = datetime.utcfromtimestamp(self.value)
-        elif isinstance(self.value, basestring):
-            date = parse_date(self.value)
+    def function(self, source, *call_args):
+        value = call_args[0]
+        if isinstance(value, int):
+            date = datetime.utcfromtimestamp(value)
+        elif isinstance(value, basestring):
+            date = parse_date(value)
         else:
-            raise TypeError("Could not parse %s" % self.value)
+            raise TypeError("Could not parse %s" % value)
 
         if date.tzinfo is None:
             date = date.replace(tzinfo=self.tz)
