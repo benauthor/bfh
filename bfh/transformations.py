@@ -68,17 +68,21 @@ class Get(TransformationInterface):
         value == 1
 
     kwargs:
-        optional (bool) -- don't error if names missing, just return None
+        required (bool, default False) -- error if names missing
 
     returns:
-        fetched value or None if `optional` kwarg is set
+        fetched value or None if `required`
 
     raises:
-        Missing if `optional` kwarg is false
+        Missing if `required` is false
     """
     def __init__(self, *args, **kwargs):
         self.args = args
         self.kwargs = kwargs
+        if kwargs.get('required') is None:
+            self.required = False
+        else:
+            self.required = kwargs.get('required')
 
     def __call__(self, source):
         return self.function(source)
@@ -87,17 +91,13 @@ class Get(TransformationInterface):
     def path(self):
         return self.args
 
-    @property
-    def optional(self):
-        return self.kwargs.get('optional')
-
     def _get_from_dict(self, source, path):
-        if self.optional:
+        if not self.required:
             return source.get(path)
         return source[path]
 
     def _get_from_obj(self, source, path):
-        if self.optional:
+        if not self.required:
             return getattr(source, path, None)
         return getattr(source, path)
 

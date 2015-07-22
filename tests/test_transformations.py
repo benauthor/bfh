@@ -54,15 +54,15 @@ class TestGet(TestCase):
         result = Get("path")(MyObj())
         self.assertEqual(result, "goal")
 
+    def test_default_is_not_required(self):
+        my_dict = {"path": "goal"}
+        result = Get("else")(my_dict)
+        self.assertIsNone(result)
+
     def test_mandatory_raises(self):
         my_dict = {"path": "goal"}
         with self.assertRaises(Missing):
-            Get("other")(my_dict)
-
-    def test_optional_missing_is_none(self):
-        my_dict = {"path": "goal"}
-        result = Get("else", optional=True)(my_dict)
-        self.assertIsNone(result)
+            Get("other", required=True)(my_dict)
 
 
 class TestCoerce(TestCase):
