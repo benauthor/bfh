@@ -2,7 +2,7 @@ from unittest import TestCase
 
 import math
 
-from bfh import Schema, Mapping
+from bfh import Schema, Mapping, GenericSchema
 from bfh.exceptions import Invalid
 from bfh.fields import (
     ArrayField,
@@ -386,8 +386,14 @@ class SquarePegToRoundHole(Mapping):
     diameter = Do(largest_square, Get('width'))
 
 
-class TestReadmeExample(TestCase):
-    def test_it_works(self):
+class ImpliesSchemas(Mapping):
+    id = Concat('author', ':', Get('nom_de_plume'))
+    name = Get('nom_de_plume')
+    book = Get('best_known_for')
+
+
+class TestReadmeExamples(TestCase):
+    def test_square_peg(self):
         my_peg = SquarePeg(id=1, name="peggy", width=50)
 
         transformed = SquarePegToRoundHole().apply(my_peg).serialize()
@@ -395,3 +401,13 @@ class TestReadmeExample(TestCase):
         assert transformed['id'] == u'from_square:1'
         assert transformed['name'] == u'peggy'
         assert 70.71 < transformed['diameter'] < 70.72
+
+    def test_implicit_schemas(self):
+        source = {
+            "nom_de_plume": "Mark Twain",
+            "best_known_for": "Huckleberry Finn"
+        }
+        output = ImpliesSchemas().apply(source)
+
+        assert type(output) == GenericSchema
+        assert set(output.serialize().keys()) == {'book', 'id', 'name'}

@@ -40,9 +40,35 @@ transformed['diameter']
 # 70.71067811865476
 ```
 
+BFH is a library for mapping schemas to other schemas. The use of explicit schema objects is *totally optional*... a mapping can be used without input and output schemas. Viz.
+
+```python
+
+class ImpliesSchemas(Mapping):
+    id = Concat('author', ':', Get('nom_de_plume'))
+    name = Get('nom_de_plume')
+    book = Get('best_known_for')
+
+source = {
+    "nom_de_plume": "Mark Twain",
+    "best_known_for": "Huckleberry Finn"
+}
+output = ImpliesSchemas().apply(source)
+
+type(output)
+# <class 'bfh.GenericSchema'>
+output.serialize().keys()
+# ['book', 'id', 'name']
+
+```
+
+Explicit schemas, however, can help preserve your sanity when things get complex.
+
+
 ## Validation
 
-It's not really a validation library, OK? There are lots of those out there, so we just got the basics here.
+It's not really a validation library, OK? There are lots of those out there, so we don't get too fancy here. Just some sanity checking.
+
 
 ## Build Status
 
