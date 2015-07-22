@@ -1,17 +1,28 @@
 import datetime
 from unittest import TestCase
 
+from bfh import Schema, Mapping
 from bfh.exceptions import Missing
+from bfh.fields import (
+    ArrayField,
+    Subschema,
+    IntegerField,
+    UnicodeField,
+)
 from bfh.transformations import (
+    All,
     Bool,
     Const,
     Concat,
     Do,
     Get,
     Int,
+    Many,
+    ManySubmap,
     Num,
     Str,
     ParseDate,
+    Submapping,
     utc,
 )
 
@@ -168,3 +179,106 @@ class TestParseDate(TestCase):
             result = ParseDate(birthday)()
             self.assertEqual(datetime.datetime(1982, 8, 12, 10, tzinfo=utc),
                              result)
+
+
+class TestSubmapping(TestCase):
+    def test_can_use_submaps_for_root(self):
+        source = {
+            "flat": 1,
+            "nice": 2
+        }
+
+        class Source(Schema):
+            flat = IntegerField()
+            nice = IntegerField()
+
+        class TargetInner(Schema):
+            goal = IntegerField()
+
+        class Target(Schema):
+            inner = Subschema(TargetInner)
+
+        class Inner(Mapping):
+            goal = Get("flat")
+
+        class Outer(Mapping):
+            inner = Submapping(Inner, All())
+
+        transformed = Outer().apply(source).serialize()
+        self.assertEqual({"inner": {"goal": 1}}, transformed)
+
+        class OuterWithSourceTarget(Outer):
+            source_schema = Source
+            target_schema = Target
+
+        transformed = OuterWithSourceTarget().apply(source).serialize()
+        self.assertEqual({"inner": {"goal": 1}}, transformed)
+
+    def test_can_pass_part_to_submap(self):
+        source = {
+            "nested": {
+                "okay": 3
+            }
+        }
+
+        class Inner(Mapping):
+            goal = Get("okay")
+
+        class Outer(Mapping):
+            inner = Submapping(Inner, Get("nested"))
+
+        transformed = Outer().apply(source).serialize()
+        self.assertEqual({"inner": {"goal": 3}}, transformed)
+
+
+class TestMany(TestCase):
+    def test_simple_many(self):
+        class Source(Schema):
+            together = ArrayField(IntegerField())
+            sep_1 = IntegerField()
+            sep_2 = IntegerField()
+
+        class MyMap(Mapping):
+            source_schema = Source
+
+            numbers = Many(Int, Get('together'))
+            more_numbers = Many(Int, Get('sep_1'), Get('sep_2'), Const(6))
+
+        source = {
+            "together": [1, 2, 3],
+            "sep_1": 4,
+            "sep_2": 5
+        }
+
+        transformed = MyMap().apply(source).serialize()
+        self.assertEqual(transformed['numbers'], [1, 2, 3])
+        self.assertEqual(transformed['more_numbers'], [4, 5, 6])
+
+    def test_many_submap(self):
+        class Inner(Schema):
+            wow = UnicodeField()
+
+        class Source(Schema):
+            items = ArrayField(Subschema(Inner))
+
+        class Sub(Mapping):
+            inner = Get('wow')
+
+        class MyMap(Mapping):
+            numbers = ManySubmap(Sub, Get('items'))
+
+        source = {
+            "items": [
+                {"wow": "one"},
+                {"wow": "two"}
+            ]
+        }
+
+        transformed = MyMap().apply(source).serialize()
+        expected = {
+            "numbers": [
+                {"inner": "one"},
+                {"inner": "two"}
+            ]
+        }
+        self.assertEqual(expected, transformed)

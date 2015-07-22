@@ -17,6 +17,7 @@ __all__ = [
     "Const",
     "Concat",
     "Bool",
+    "ManySubmap",
     "Num",
     "Do",
     "Int",
@@ -143,12 +144,55 @@ class Submapping(Transformation):
         self.submapping_class = submapping_class
         self.args = args
 
+    def function(self, source=None):
+        return self.submapping_class().apply(self.args[0])
+
+
+class ManySubmap(Submapping):
     @property
-    def value(self):
-        return self.args[0]
+    def items(self):
+        if len(self.args) > 1:
+            return self.args
+
+        if len(self.args) == 1 and isinstance(self.args[0], (list, tuple)):
+            return self.args[0]
+
+        elif len(self.args) == 1:
+            return [self.args[0]]
+
+        else:
+            return []
 
     def function(self, source=None):
-        return self.submapping_class().apply(self.value)
+        return [self.submapping_class().apply(item).serialize()
+                for item in self.items]
+
+
+class Many(Transformation):
+    def __init__(self, subtrans, *args, **kwargs):
+        self.subtrans = subtrans  # Transformation
+        self.args = args
+        self.kwargs = kwargs
+
+    @property
+    def items(self):
+        if len(self.args) > 1:
+            return self.args
+
+        if len(self.args) == 1 and isinstance(self.args[0], (list, tuple)):
+            return self.args[0]
+
+        elif len(self.args) == 1:
+            return [self.args[0]]
+
+        else:
+            return []
+
+    def function(self, source=None):
+        if isinstance(self.subtrans, Submapping):
+            raise ValueError("Can't Many(Submapping). Use Manymap instead.")
+
+        return [self.subtrans(item, **self.kwargs)() for item in self.items]
 
 
 class Const(Transformation):
