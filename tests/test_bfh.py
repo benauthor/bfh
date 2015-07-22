@@ -179,13 +179,13 @@ class OneToTwoBase(Mapping):
 
 
 class OneToTwo(OneToTwoBase):
-    source = Schema1
-    target = Schema2
+    source_schema = Schema1
+    target_schema = Schema2
 
 
 class TwoToOne(Mapping):
-    source = Schema2
-    target = Schema1
+    source_schema = Schema2
+    target_schema = Schema1
 
     my_str = Get('peas')
     my_int = Get('carrots')
@@ -263,8 +263,8 @@ class TestMappings(TestCase):
         self.assertEqual({"inner": {"goal": 1}}, transformed)
 
         class OuterWithSourceTarget(Outer):
-            source = Source
-            target = Target
+            source_schema = Source
+            target_schema = Target
 
         transformed = OuterWithSourceTarget().apply(source).serialize()
         self.assertEqual({"inner": {"goal": 1}}, transformed)
@@ -296,8 +296,8 @@ class TestMappings(TestCase):
             bad = IntegerField(required=True)  # Uh oh
 
         class Mymap(Mapping):
-            source = FirstSchema
-            target = OtherSchema
+            source_schema = FirstSchema
+            target_schema = OtherSchema
 
             cool = Get('wow')
             bad = Get('umm')
@@ -340,25 +340,25 @@ class TestInheritance(TestCase):
             root_veg = IntegerField()
 
         class MappingA(Mapping):
-            source = SchemaA
+            source_schema = SchemaA
             legumes = Get('beans')
 
         class MappingB(MappingA):
-            target = SchemaB
+            target_schema = SchemaB
             root_veg = Get('carrots')
 
         assert isinstance(MappingB.legumes, Get)
         assert isinstance(MappingB.root_veg, Get)
-        assert MappingB.source is SchemaA
-        assert MappingB.target is SchemaB
+        assert MappingB.source_schema is SchemaA
+        assert MappingB.target_schema is SchemaB
 
         m = MappingB()
         assert hasattr(m, "legumes")
         assert "legumes" in m._fields
         assert hasattr(m, "root_veg")
         assert "root_veg" in m._fields
-        assert m.source is SchemaA
-        assert m.target is SchemaB
+        assert m.source_schema is SchemaA
+        assert m.target_schema is SchemaB
 
 
 class SquarePeg(Schema):
@@ -378,8 +378,8 @@ def largest_square(width):
 
 
 class SquarePegToRoundHole(Mapping):
-    source = SquarePeg
-    target = RoundHole
+    source_schema = SquarePeg
+    target_schema = RoundHole
 
     id = Concat('from_square', ':', Str(Get('id')))
     name = Get('name')

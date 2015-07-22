@@ -74,12 +74,12 @@ class Mapping(MappingInterface):
 
         TODO validate (optionally) if source and target specified?
         """
-        if self.source is None:
+        if self.source_schema is None:
             loaded_source = blob
-        elif isinstance(blob, self.source):
+        elif isinstance(blob, self.source_schema):
             loaded_source = blob
         else:
-            loaded_source = self.source(**blob)
+            loaded_source = self.source_schema(**blob)
 
         all_attrs = self._fields.keys()
         target_dict = {}
@@ -88,7 +88,7 @@ class Mapping(MappingInterface):
             result = transform(loaded_source)
             target_dict[attr_name] = result
 
-        if self.target is None:
+        if self.target_schema is None:
             return GenericSchema(target_dict)
 
-        return self.target(**target_dict)
+        return self.target_schema(**target_dict)

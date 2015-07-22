@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 
-from abc import ABCMeta, abstractproperty, abstractmethod
+from abc import ABCMeta, abstractmethod
 
 
 class FieldInterface(object):
@@ -72,13 +72,13 @@ class MappingInterface(object):
     __metaclass__ = HasFieldsMeta
 
     @property
-    def source(self):
+    def source_schema(self):
         """
 
         """
 
     @property
-    def target(self):
+    def target_schema(self):
         """
 
         """

@@ -22,8 +22,8 @@ def largest_square(width):
 
 
 class SquarePegToRoundHole(Mapping):
-    source = SquarePeg
-    target = RoundHole
+    source_schema = SquarePeg
+    target_schema = RoundHole
 
     id = Concat('from_square', ':', Str(Get('id')))
     name = Get('name')
