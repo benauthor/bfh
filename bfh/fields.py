@@ -74,6 +74,9 @@ class Subschema(Field):
         return value
 
     def validate(self, value):
+        super(Subschema, self).validate(value)
+        if not self.required and value is None:
+            return True
         value.validate()
         return True
 

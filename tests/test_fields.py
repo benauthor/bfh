@@ -89,7 +89,7 @@ class TestFieldValidation(TestCase):
         with self.assertRaises(Invalid):
             field.validate(1)
 
-    def test_dict_validation(self):
+    def test_object_validation(self):
         field = ObjectField()
 
         assert field.validate({})
@@ -119,6 +119,29 @@ class TestFieldValidation(TestCase):
 
         assert field.validate(None)
 
+    def test_subschema_validation(self):
+        class SomeSchema(Schema):
+            inner = IntegerField()
+
+        field = Subschema(SomeSchema)
+
+        assert field.validate(SomeSchema(inner=1))
+
+        with self.assertRaises(Invalid):
+            field.validate(SomeSchema(inner="wow"))
+
+        with self.assertRaises(Invalid):
+            field.validate(None)
+
+        field = Subschema(SomeSchema, required=False)
+
+        assert field.validate(SomeSchema(inner=1))
+
+        assert field.validate(None)
+
+        with self.assertRaises(Invalid):
+            field.validate(SomeSchema(inner="wow"))
+
 
 class TestFieldSerialization(TestCase):
     """
@@ -146,7 +169,7 @@ class TestFieldSerialization(TestCase):
         source = [SomeSchema(wat=1), SomeSchema(wat=2)]
         self.assertEqual([{"wat": 1}, {"wat": 2}], field.serialize(source))
 
-    def test_dict_serialization(self):
+    def test_object_serialization(self):
         field = ObjectField()
 
         self.assertEqual(None, field.serialize(None))
@@ -160,6 +183,21 @@ class TestFieldSerialization(TestCase):
 
         class SomeSchema(Schema):
             great = ArrayField(int)
+
+        source = SomeSchema(great=[1, 2, 3])
+        self.assertEqual({"great": [1, 2, 3]}, field.serialize(source))
+
+    def test_subschema_serialization(self):
+        class SomeSchema(Schema):
+            great = ArrayField(int)
+
+        field = Subschema(SomeSchema)
+
+        self.assertEqual(None, field.serialize(None))
+
+        self.assertEqual([], field.serialize([]))
+
+        self.assertEqual("wow", field.serialize("wow"))
 
         source = SomeSchema(great=[1, 2, 3])
         self.assertEqual({"great": [1, 2, 3]}, field.serialize(source))
