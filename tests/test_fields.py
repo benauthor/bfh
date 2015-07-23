@@ -152,13 +152,28 @@ class TestFieldValidation(TestCase):
             field.validate(SomeSchema(inner="wow"))
 
         with self.assertRaises(Invalid):
+            field.validate(SomeSchema(inner=None))
+
+        with self.assertRaises(Invalid):
             field.validate(None)
+
+        with self.assertRaises(Invalid):
+            field.validate(SomeSchema())
+
+        with self.assertRaises(Invalid):
+            field.validate({})
 
         field = Subschema(SomeSchema, required=False)
 
         assert field.validate(SomeSchema(inner=1))
 
         assert field.validate(None)
+
+        assert field.validate({})
+
+        assert field.validate(SomeSchema())
+
+        assert field.validate(SomeSchema(inner=None))
 
         with self.assertRaises(Invalid):
             field.validate(SomeSchema(inner="wow"))

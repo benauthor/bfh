@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 
-from .interfaces import SchemaInterface, MappingInterface
+from .interfaces import SchemaInterface, MappingInterface, NULLISH
 
 from . import fields
 from . import transformations
@@ -11,8 +11,6 @@ __all__ = [
     "fields",
     "transformations",
 ]
-
-NULLISH = (None, {}, [], tuple())
 
 
 class Schema(SchemaInterface):
@@ -53,6 +51,10 @@ class Schema(SchemaInterface):
     def validate(self):
         return all([v.validate(getattr(self, k))
                     for k, v in self._fields.items()])
+
+    @property
+    def is_empty(self):
+        return all(v in NULLISH for v in self.__dict__.values())
 
 
 class GenericSchema(Schema):

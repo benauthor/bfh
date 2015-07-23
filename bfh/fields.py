@@ -3,7 +3,7 @@ from __future__ import absolute_import
 from datetime import datetime
 
 from .exceptions import Invalid
-from .interfaces import FieldInterface, SchemaInterface
+from .interfaces import FieldInterface, SchemaInterface, NULLISH
 
 try:
     string_type = unicode
@@ -76,15 +76,22 @@ class Subschema(Field):
             value = {}
 
         if not self.required:
-            if all(v in (None, [], {}, '') for v in value.values()):
+            if all(v in NULLISH for v in value.values()):
                 value = {}
 
         return value
 
     def validate(self, value):
         super(Subschema, self).validate(value)
-        if not self.required and value is None:
-            return True
+        if not self.required:
+            if value in NULLISH:
+                return True
+            if getattr(value, "is_empty", False):
+                return True
+
+        if not hasattr(value, 'validate'):
+            value = self.subschema_class(value)
+
         value.validate()
         return True
 

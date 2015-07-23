@@ -1,6 +1,8 @@
 from __future__ import absolute_import
 
-from abc import ABCMeta, abstractmethod
+from abc import ABCMeta, abstractmethod, abstractproperty
+
+NULLISH = (None, {}, [], tuple())
 
 
 class FieldInterface(object):
@@ -62,6 +64,12 @@ class SchemaInterface(object):
 
     @abstractmethod
     def serialize(self, implicit_nulls=True):
+        """
+
+        """
+
+    @abstractproperty
+    def is_empty(self):
         """
 
         """

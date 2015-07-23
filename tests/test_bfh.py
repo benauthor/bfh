@@ -182,6 +182,10 @@ class TestSchemas(TestCase):
         result = Conversation(numbers=[1, 2]).serialize(implicit_nulls=False)
         self.assertEqual({"numbers": [1, 2], "conversants": None}, result)
 
+    def test_false_is_not_null(self):
+        result = Conversation(numbers=False).serialize()
+        self.assertEqual({"numbers": False}, result)
+
     def test_subschema_implicit_nulls(self):
         my_ship = {
             "name": "Podunk",
