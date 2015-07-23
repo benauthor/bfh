@@ -12,6 +12,8 @@ __all__ = [
     "transformations",
 ]
 
+NULLISH = (None, {}, [], tuple())
+
 
 class Schema(SchemaInterface):
 
@@ -30,18 +32,21 @@ class Schema(SchemaInterface):
             if hasattr(self, k):
                 setattr(self, k, v)
 
-    def serialize(self):
+    def serialize(self, implicit_nulls=True):
         outd = {}
         for name in self._field_names:
             value = self.__dict__.get(name)
             field = self._fields.get(name)
             if hasattr(value, "serialize"):
-                value = value.serialize()
+                value = value.serialize(implicit_nulls=implicit_nulls)
 
             if hasattr(field, "serialize"):
                 value = field.serialize(value)
 
-            outd[name] = value
+            if implicit_nulls and value in NULLISH:
+                pass
+            else:
+                outd[name] = value
 
         return outd
 

@@ -14,7 +14,7 @@ class FieldInterface(object):
         """
 
     @abstractmethod
-    def serialize(self):
+    def serialize(self, value):
         """
 
         """
@@ -61,7 +61,7 @@ class SchemaInterface(object):
         """
 
     @abstractmethod
-    def serialize(self):
+    def serialize(self, implicit_nulls=True):
         """
 
         """

@@ -223,7 +223,7 @@ class TestFieldSerialization(TestCase):
         source = SomeSchema(great=[1, 2, 3])
         self.assertEqual({"great": [1, 2, 3]}, field.serialize(source))
         source = SomeSchema(great=None)
-        self.assertEqual({"great": None}, field.serialize(source))
+        self.assertEqual({}, field.serialize(source))
 
         field = Subschema(SomeSchema, required=False)
         source = SomeSchema(great=[1, 2, 3])

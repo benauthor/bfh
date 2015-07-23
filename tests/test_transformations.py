@@ -252,7 +252,7 @@ class TestIdempotence(TestCase):
         result3 = Hm().apply(third).serialize()
 
         assert result1 == first
-        assert result2 == {"wow": None}  # TODO remove null keys or leave them in? make that an option?
+        assert result2 == second
         assert result3 == third
 
 
@@ -283,15 +283,14 @@ class TestMany(TestCase):
             numbers = Many(Int, Get('wow'))
 
         source = {"wow": []}
-        expected = {"numbers": []}
+        expected = {}
         transformed = Simpler().apply(source).serialize()
         self.assertEqual(expected, transformed)
 
         source = {"wow": None}
-        expected = {"numbers": []}
+        expected = {}
         transformed = Simpler().apply(source).serialize()
         self.assertEqual(expected, transformed)
-
 
     def test_many_submap(self):
         class Inner(Schema):
@@ -326,7 +325,7 @@ class TestMany(TestCase):
             const = Const(1)
 
         source = {"items": []}
-        expected = {"numbers": [], "const": 1}
+        expected = {"const": 1}
         transformed = WithConst().apply(source).serialize()
         self.assertEqual(expected, transformed)
 
@@ -338,7 +337,7 @@ class TestMany(TestCase):
                 "two": []
             }
         }
-        expected = {"nested": []}
+        expected = {}
         transformed = Deep().apply(source).serialize()
         self.assertEqual(expected, transformed)
 
@@ -346,4 +345,4 @@ class TestMany(TestCase):
             inner = ManySubmap(Sub, Const(None))
 
         transformed = HasNone().apply({}).serialize()
-        self.assertEqual({"inner": []}, transformed)
+        self.assertEqual({}, transformed)
