@@ -193,7 +193,7 @@ class TestFieldSerialization(TestCase):
     def test_object_serialization(self):
         field = ObjectField()
 
-        self.assertEqual(None, field.serialize(None))
+        self.assertEqual({}, field.serialize(None))
 
         self.assertEqual([], field.serialize([]))
 
@@ -210,11 +210,11 @@ class TestFieldSerialization(TestCase):
 
     def test_subschema_serialization(self):
         class SomeSchema(Schema):
-            great = ArrayField(int)
+            great = ArrayField(int, required=False)
 
         field = Subschema(SomeSchema)
 
-        self.assertEqual(None, field.serialize(None))
+        self.assertEqual({}, field.serialize(None))
 
         self.assertEqual([], field.serialize([]))
 
@@ -222,6 +222,14 @@ class TestFieldSerialization(TestCase):
 
         source = SomeSchema(great=[1, 2, 3])
         self.assertEqual({"great": [1, 2, 3]}, field.serialize(source))
+        source = SomeSchema(great=None)
+        self.assertEqual({"great": None}, field.serialize(source))
+
+        field = Subschema(SomeSchema, required=False)
+        source = SomeSchema(great=[1, 2, 3])
+        self.assertEqual({"great": [1, 2, 3]}, field.serialize(source))
+        source = SomeSchema(great=None)
+        self.assertEqual({}, field.serialize(source))
 
     def test_unicode_serialization(self):
         field = UnicodeField()

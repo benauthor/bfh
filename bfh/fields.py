@@ -70,7 +70,15 @@ class Subschema(Field):
 
     def serialize(self, value):
         if hasattr(value, "serialize"):
-            return value.serialize()
+            value = value.serialize()
+
+        if value is None:
+            value = {}
+
+        if not self.required:
+            if all(v is None for v in value.values()):
+                value = {}
+
         return value
 
     def validate(self, value):
@@ -152,7 +160,15 @@ class ObjectField(SimpleTypeField):
 
     def serialize(self, value):
         if hasattr(value, "serialize"):
-            return value.serialize()
+            value = value.serialize()
+
+        if value is None:
+            value = {}
+
+        if not self.required:
+            if all(v is None for v in value.values()):
+                value = {}
+
         return value
 
 

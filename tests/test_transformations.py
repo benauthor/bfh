@@ -287,6 +287,12 @@ class TestMany(TestCase):
         transformed = Simpler().apply(source).serialize()
         self.assertEqual(expected, transformed)
 
+        source = {"wow": None}
+        expected = {"numbers": []}
+        transformed = Simpler().apply(source).serialize()
+        self.assertEqual(expected, transformed)
+
+
     def test_many_submap(self):
         class Inner(Schema):
             wow = UnicodeField()
