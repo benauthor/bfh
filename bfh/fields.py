@@ -76,7 +76,7 @@ class Subschema(Field):
             value = {}
 
         if not self.required:
-            if all(v is None for v in value.values()):
+            if all(v in (None, [], {}, '') for v in value.values()):
                 value = {}
 
         return value
@@ -166,7 +166,7 @@ class ObjectField(SimpleTypeField):
             value = {}
 
         if not self.required:
-            if all(v is None for v in value.values()):
+            if all(v in (None, [], {}, '') for v in value.values()):
                 value = {}
 
         return value
