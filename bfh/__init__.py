@@ -68,7 +68,7 @@ class GenericSchema(Schema):
         return self.__dict__[name]
 
     def validate(self):
-        pass
+        return True
 
 
 class Mapping(MappingInterface):
