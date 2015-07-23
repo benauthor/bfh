@@ -146,7 +146,10 @@ class Submapping(Transformation):
         return self.submapping_class().apply(call_args[0])
 
 
-def _many_items(call_args):
+def _many_items(call_args, drop_nones=True):
+    if drop_nones:
+        call_args = [i for i in call_args if i is not None]
+
     if len(call_args) > 1:
         return call_args
 

@@ -279,6 +279,14 @@ class TestMany(TestCase):
         self.assertEqual(transformed['numbers'], [1, 2, 3])
         self.assertEqual(transformed['more_numbers'], [4, 5, 6])
 
+        class Simpler(Mapping):
+            numbers = Many(Int, Get('wow'))
+
+        source = {"wow": []}
+        expected = {"numbers": []}
+        transformed = Simpler().apply(source).serialize()
+        self.assertEqual(expected, transformed)
+
     def test_many_submap(self):
         class Inner(Schema):
             wow = UnicodeField()
@@ -307,3 +315,29 @@ class TestMany(TestCase):
             ]
         }
         self.assertEqual(expected, transformed)
+
+        class WithConst(MyMap):
+            const = Const(1)
+
+        source = {"items": []}
+        expected = {"numbers": [], "const": 1}
+        transformed = WithConst().apply(source).serialize()
+        self.assertEqual(expected, transformed)
+
+        class Deep(Mapping):
+            nested = ManySubmap(Sub, Get("one", "two"))
+
+        source = {
+            "one": {
+                "two": []
+            }
+        }
+        expected = {"nested": []}
+        transformed = Deep().apply(source).serialize()
+        self.assertEqual(expected, transformed)
+
+        class HasNone(Mapping):
+            inner = ManySubmap(Sub, Const(None))
+
+        transformed = HasNone().apply({}).serialize()
+        self.assertEqual({"inner": []}, transformed)
