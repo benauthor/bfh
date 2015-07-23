@@ -132,6 +132,14 @@ class TestConcat(TestCase):
         result = Concat(first, Concat(second, third))()
         self.assertEqual(first + second + third, result)
 
+    def test_none_behavior(self):
+        result = Concat(None, "alone")()
+        self.assertEqual("alone", result)
+
+        concatter = Concat(None, "alone", strict=True)
+        with self.assertRaises(TypeError):
+            concatter()
+
 
 class TestDo(TestCase):
     def test_can_do(self):

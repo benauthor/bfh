@@ -79,10 +79,7 @@ class Get(TransformationInterface):
     def __init__(self, *args, **kwargs):
         self.path = args
         self.kwargs = kwargs
-        if kwargs.get('required') is None:
-            self.required = False
-        else:
-            self.required = kwargs.get('required')
+        self.required = kwargs.get('required', False)
 
     def __call__(self, source):
         return self.function(source)
@@ -234,7 +231,13 @@ class Bool(CoerceType):
 
 class Concat(Transformation):
 
+    def __init__(self, *args, **kwargs):
+        super(Concat, self).__init__(*args, **kwargs)
+        self.strict = kwargs.get('strict', False)
+
     def function(self, source, *call_args):  # source ignored
+        if not self.strict:
+            call_args = [i for i in call_args if i]
         return "".join(call_args)
 
 
