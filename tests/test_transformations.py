@@ -32,6 +32,24 @@ except NameError:
     string_type = str
 
 
+class TestAll(TestCase):
+    def test_all_is_all_by_default(self):
+        class Myschema(Schema):
+            wow = IntegerField()
+
+        extras = {"wow": 1, "other": 2}
+        m = Myschema(extras)
+        allof = All()(m)
+        self.assertEqual(extras, allof)
+
+        # without a schema, we obvs pass everything
+        schemaless = All(strict=True)(extras)
+        self.assertEqual(extras, schemaless)
+
+        filtered = All(strict=True)(m)
+        self.assertEqual({"wow": 1}, filtered)
+
+
 class TestGet(TestCase):
     def test_can_get_from_dict(self):
         my_dict = {"path": "goal"}

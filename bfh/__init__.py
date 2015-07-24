@@ -21,6 +21,10 @@ class Schema(SchemaInterface):
         if len(args) == 1 and isinstance(args[0], dict):
             return self.__init__(**dict(args[0], **kwargs))
 
+        # stash raw kwargs for downstream
+        # since this is set in metaclass, hidden from __dict__
+        self._raw_input.update(kwargs)
+
         # init any subschemas
         for k, v in self._fields.items():
             if isinstance(v, fields.Subschema):

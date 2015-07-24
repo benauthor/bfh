@@ -225,6 +225,17 @@ class TestSchemas(TestCase):
         expected = {"name": "Podunk"}
         self.assertEqual(expected, s)
 
+    def test_schema_keeps_its_raw_input(self):
+        class Myschema(Schema):
+            wow = IntegerField()
+
+        m = Myschema(wow=1)
+        self.assertEqual({"wow": 1}, m._raw_input)
+
+        extras = {"wow": 1, "not_a_field": 2}
+        m = Myschema(extras)
+        self.assertEqual(extras, m._raw_input)
+
 
 class OneToTwoBase(Mapping):
     peas = Get('my_str')

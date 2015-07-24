@@ -43,16 +43,23 @@ utc = UTC()
 
 
 class All(TransformationInterface):
-    def __init__(self):
-        pass
+    def __init__(self, strict=False):
+        self.strict = strict
 
     def __call__(self, source):
         return self.function(source)
 
+    @staticmethod
+    def _serialize_or_pass(item):
+        if hasattr(item, "serialize"):
+            return item.serialize()
+        return item
+
     def function(self, source):
-        if hasattr(source, "serialize"):
-            return source.serialize()
-        return source
+        if not self.strict and hasattr(source, '_raw_input'):
+            return {k: self._serialize_or_pass(v)
+                    for k, v in source._raw_input.items()}
+        return self._serialize_or_pass(source)
 
 
 class Get(TransformationInterface):
