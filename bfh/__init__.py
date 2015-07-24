@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 
-from .interfaces import SchemaInterface, MappingInterface, NULLISH
+from .common import nullish
+from .interfaces import SchemaInterface, MappingInterface
 
 from . import fields
 from . import transformations
@@ -41,7 +42,8 @@ class Schema(SchemaInterface):
             if hasattr(field, "serialize"):
                 value = field.serialize(value)
 
-            if implicit_nulls and value in NULLISH:
+            if implicit_nulls and nullish(value,
+                                          implicit_nulls=implicit_nulls):
                 pass
             else:
                 outd[name] = value
@@ -54,7 +56,7 @@ class Schema(SchemaInterface):
 
     @property
     def is_empty(self):
-        return all(v in NULLISH for v in self.__dict__.values())
+        return all(nullish(v) for v in self.__dict__.values())
 
 
 class GenericSchema(Schema):

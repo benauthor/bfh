@@ -215,6 +215,16 @@ class TestSchemas(TestCase):
         expected = {"name": "Podunk"}
         self.assertEqual(expected, s)
 
+        my_ship = {
+            "name": "Podunk",
+            "captain": Person(first_name=None,
+                              last_name=None)
+        }
+        s = Ship(my_ship).serialize()
+
+        expected = {"name": "Podunk"}
+        self.assertEqual(expected, s)
+
 
 class OneToTwoBase(Mapping):
     peas = Get('my_str')
@@ -355,6 +365,14 @@ class TestInheritance(TestCase):
         assert "root_veg" in m._fields
         assert m.source_schema is SchemaA
         assert m.target_schema is SchemaB
+
+        source = {
+            "beans": 1,
+            "carrots": 2
+        }
+        expected = {"legumes": 1, "root_veg": 2}
+        result = m.apply(source).serialize()
+        self.assertEqual(expected, result)
 
 
 class SquarePeg(Schema):

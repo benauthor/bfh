@@ -179,6 +179,33 @@ class TestFieldValidation(TestCase):
             field.validate(SomeSchema(inner="wow"))
 
 
+    def test_required_within_not_required_validation(self):
+        class MostIn(Schema):
+            foo = IntegerField()
+
+        class Inner(Schema):
+            maybe = Subschema(MostIn, required=True)
+
+        class Outer(Schema):
+            maybe = Subschema(Inner, required=False)
+
+        full = Outer(maybe=Inner(maybe=MostIn(foo=1)))
+        assert full.validate()
+
+        oops = Outer(maybe=Inner(maybe=MostIn(foo="A")))
+        with self.assertRaises(Invalid):
+            oops.validate()
+
+        empty = Outer(maybe=None)
+        assert empty.validate()
+
+        inner_empty = Outer(maybe=Inner(maybe=None))
+        assert inner_empty.validate()
+
+        innermost = Outer(maybe=Inner(maybe=MostIn(foo=None)))
+        assert innermost.validate()
+
+
 class TestFieldSerialization(TestCase):
     """
     Tests serialization for field types.

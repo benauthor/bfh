@@ -2,8 +2,6 @@ from __future__ import absolute_import
 
 from abc import ABCMeta, abstractmethod, abstractproperty
 
-NULLISH = (None, {}, [], tuple())
-
 
 class FieldInterface(object):
 
