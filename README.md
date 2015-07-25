@@ -40,7 +40,7 @@ transformed['diameter']
 # 70.71067811865476
 ```
 
-BFH is a library for mapping schemas to other schemas. The use of explicit schema objects is *totally optional*... a mapping can be used without input and output schemas. Viz.
+BFH is a DSL for mapping blobs to other blobs. It can map dict-ish or object-ish things... as long as you got names and the names got values, you can whack it into shape. The use of explicit schema objects is *totally optional*... a mapping can be used without input and output schemas... the names in the mapping are all you *really* need. Viz.
 
 ```python
 
@@ -67,8 +67,18 @@ Explicit schemas, however, can help preserve your sanity when things get complex
 
 ## Validation
 
-It's not really a validation library, OK? There are lots of those out there, so we don't get too fancy here. Just some sanity checking.
+While BFH can validate a schema, it's not primarily a validation library, OK? There are lots of those out there, so we don't get too fancy here. Just some sanity checking.
 
+```python
+my_peg = SquarePeg(id=1, name="peggy", width=50)
+my_peg.validate()
+# True
+
+broken_peg = SquarePeg(id=2, name="broken", width="a hundred")
+broken_peg.validate()
+# ... (raises Invalid)
+
+```
 
 ## Build Status
 

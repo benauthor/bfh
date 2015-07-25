@@ -15,8 +15,26 @@ __all__ = [
 
 
 class Schema(SchemaInterface):
+    """
+    A base class for defining your schemas.
 
+    Inherit this and add some fields:
+
+        class Animal(Schema):
+            name = UnicodeField()
+            legs = IntegerField()
+            noise = UnicodeField()
+
+    """
     def __init__(self, *args, **kwargs):
+        """
+        Args:
+           Pass a dictionary a single positional argument and it will be
+           tranformed into kwargs.
+
+        Kwargs:
+           Values to assign to fields in the schema. Unknown names are ignored.
+        """
         # when a dict is passed as positional argument, transform to kwargs
         if len(args) == 1 and isinstance(args[0], dict):
             return self.__init__(**dict(args[0], **kwargs))
@@ -36,6 +54,15 @@ class Schema(SchemaInterface):
                 setattr(self, k, v)
 
     def serialize(self, implicit_nulls=True):
+        """
+        Represent this schema as a dictionary.
+
+        Kwargs:
+            implicit_nulls (Bool) - drop any keys whose value is nullish
+
+        Returns:
+            dict
+        """
         outd = {}
         for name in self._field_names:
             value = self.__dict__.get(name)
@@ -55,6 +82,15 @@ class Schema(SchemaInterface):
         return outd
 
     def validate(self):
+        """
+        Validate the values in the schema.
+
+        Returns:
+            True
+
+        Raises:
+            Invalid
+        """
         return all([v.validate(getattr(self, k))
                     for k, v in self._fields.items()])
 
