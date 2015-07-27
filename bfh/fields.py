@@ -1,3 +1,7 @@
+"""
+Fields that can go on Schemas
+
+"""
 from __future__ import absolute_import
 
 from datetime import datetime
@@ -13,21 +17,29 @@ except NameError:
 
 
 __all__ = [
+    "ArrayField",
     "BooleanField",
+    "DatetimeField",
     "Field",
-    "Subschema",
     "IntegerField",
     "NumberField",
     "ObjectField",
-    "ArrayField",
+    "Subschema",
     "UnicodeField",
-    "DatetimeField",
 ]
 
 
 class Field(FieldInterface):
+    """
+    Base class for a field.
 
+    Inherit this and override self.serialize and self.validate as desired.
+    """
     def __init__(self, required=True):
+        """
+        Args:
+            required (Bool) - is this a required field in the schema?
+        """
         self.required = required
 
     def __get__(self, instance, cls=None):
@@ -57,6 +69,14 @@ class Field(FieldInterface):
 
 class Subschema(Field):
     """
+    A field that defines a subschema.
+
+    class Inner(Schema):
+        # some fields
+
+    class MySchema(Schema):
+        inner = Subschema(Inner)
+        # more fields
 
     """
     def __init__(self, subschema_class, *args, **kwargs):
@@ -98,7 +118,10 @@ class Subschema(Field):
 
 
 class SimpleTypeField(Field):
+    """
+    Base class for fields that simply validate a type.
 
+    """
     def _valid(self, value):
         if value is None and not self.required:
             return True
@@ -129,7 +152,14 @@ class NumberField(SimpleTypeField):
 
 
 class UnicodeField(SimpleTypeField):
+    """
+    A field that contains strings.
 
+    Expect unicode. If it's not already unicode, assume it's utf-8 and
+    transform it to unicode.
+
+    TODO specify optional encoding.
+    """
     field_type = string_type
 
     def __init__(self, strict=False, **kwargs):
@@ -157,7 +187,11 @@ class UnicodeField(SimpleTypeField):
 
 
 class ObjectField(SimpleTypeField):
+    """
+    A field that can contain a dict or object.
 
+    I.e. the lazy person's Subschema.
+    """
     field_type = (dict, SchemaInterface)
 
     def validate(self, value):
@@ -182,11 +216,17 @@ class ObjectField(SimpleTypeField):
 
 class ArrayField(SimpleTypeField):
     """
+    A field that can contain an array of things of type `array_type`
+
     N.B. array_type is a class, not an instance
     """
     field_type = (list, tuple)
 
     def __init__(self, array_type=None, **kwargs):
+        """
+        Kwargs:
+            array_type (type or Schema)
+        """
         super(ArrayField, self).__init__(**kwargs)
         self.array_type = array_type
 
@@ -235,7 +275,11 @@ class DatetimeField(SimpleTypeField):
 
 
 class IsoDateString(DatetimeField):
+    """
+    TODO this needn't exist. Transformation should happen in the mapping,
+    I think.
 
+    """
     def serialize(self, value):
         try:
             return value.isoformat()

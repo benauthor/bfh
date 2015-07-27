@@ -6,24 +6,18 @@ from bfh import Schema, Mapping, GenericSchema
 from bfh.exceptions import Invalid
 from bfh.fields import (
     ArrayField,
-    BooleanField,
-    DatetimeField,
-    ObjectField,
-    IsoDateString,
     IntegerField,
     NumberField,
     Subschema,
     UnicodeField
 )
 from bfh.transformations import (
-    All,
     Const,
     Concat,
     Do,
     Get,
     Int,
     Str,
-    Submapping,
 )
 
 
@@ -183,10 +177,12 @@ class TestSchemas(TestCase):
         self.assertEqual({"numbers": [1, 2], "conversants": None}, result)
 
     def test_false_is_not_null(self):
+        """We treat several things as null-ish, but False is not one of them"""
         result = Conversation(numbers=False).serialize()
         self.assertEqual({"numbers": False}, result)
 
     def test_subschema_implicit_nulls(self):
+        """An empty subschema is an implicit null"""
         my_ship = {
             "name": "Podunk",
             "captain": {
@@ -226,6 +222,7 @@ class TestSchemas(TestCase):
         self.assertEqual(expected, s)
 
     def test_schema_keeps_its_raw_input(self):
+        """Raw input is kept around in case we need it"""
         class Myschema(Schema):
             wow = IntegerField()
 
@@ -279,6 +276,7 @@ class TestMappings(TestCase):
         self.assertEqual(self.original, back_again)
 
     def test_dont_even_need_schemas(self):
+        """Schemas are really just to help you to keep your head straight"""
         transformed = OneToTwoBase().apply(self.original).serialize()
         self.assertEqual(self.expected, transformed)
 

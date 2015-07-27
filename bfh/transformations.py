@@ -1,8 +1,13 @@
+"""
+Fields that can go on Mappings.
+
+"""
 from __future__ import absolute_import
 
-from datetime import datetime, timedelta, tzinfo
+from datetime import datetime
 from dateutil.parser import parse as parse_date
 
+from .common import utc
 from .exceptions import Missing
 from .interfaces import TransformationInterface
 
@@ -13,37 +18,30 @@ except NameError:
 
 __all__ = [
     "All",
-    "Get",
-    "Const",
-    "Concat",
     "Bool",
+    "Concat",
+    "Const",
+    "Do",
+    "Get",
+    "Int",
     "ManySubmap",
     "Num",
-    "Do",
-    "Int",
     "Str",
     "Submapping",
 ]
 
 
-class UTC(tzinfo):
-
-    OFFSET = timedelta(0)
-
-    def utcoffset(self, dt):
-        return self.OFFSET
-
-    def tzname(self, dt):
-        return "UTC"
-
-    def dst(self, dt):
-        return self.OFFSET
-
-utc = UTC()
-
-
 class All(TransformationInterface):
+    """
+    Get the *whole darn source object*
+
+    """
     def __init__(self, strict=False):
+        """
+        Kwargs:
+            strict (Bool) - If the object is a schema, drop any extra keys
+                            that don't appear in the schema.
+        """
         self.strict = strict
 
     def __call__(self, source):
@@ -74,16 +72,21 @@ class Get(TransformationInterface):
         value = Get("a", "b")({"a": {"b": 1}})
         value == 1
 
-    kwargs:
+    Kwargs:
         required (bool, default False) -- error if names missing
 
-    returns:
+    Returns:
         fetched value or None if `required`
 
-    raises:
+    Raises:
         Missing if `required` is false
     """
     def __init__(self, *args, **kwargs):
+        """
+        Args:
+           a series of names to follow into object and subobject.
+
+        """
         self.path = args
         self.kwargs = kwargs
         self.required = kwargs.get('required', False)
@@ -139,12 +142,14 @@ class Transformation(TransformationInterface):
             else:
                 call_args.append(arg)
 
-        # self.args = new_args
         return self.function(source, *call_args)
 
 
 class Submapping(Transformation):
+    """
+    Map a complex subobject into a subschema.
 
+    """
     def __init__(self, submapping_class, *args):
         self.submapping_class = submapping_class
         self.args = args
@@ -154,6 +159,10 @@ class Submapping(Transformation):
 
 
 def _many_items(call_args, drop_nones=True):
+    """
+    Helper function for array-ish transformations.
+
+    """
     if drop_nones:
         call_args = [i for i in call_args if i is not None]
 
@@ -171,14 +180,20 @@ def _many_items(call_args, drop_nones=True):
 
 
 class ManySubmap(Submapping):
+    """
+    Map an array of complex objects onto a subschema.
 
+    """
     def function(self, source, *call_args):  # source ignored
         return [self.submapping_class().apply(item).serialize()
                 for item in _many_items(call_args)]
 
 
 class Many(Transformation):
+    """
+    Construct an array from a series of values.
 
+    """
     def __init__(self, subtrans, *args, **kwargs):
         self.subtrans = subtrans  # Transformation
         self.args = args
@@ -193,14 +208,17 @@ class Many(Transformation):
 
 
 class Const(Transformation):
+    """
+    Return a constant value.
 
+    """
     def function(self, source, *call_args):  # source ignored
         return call_args[0]
 
 
 class CoerceType(Transformation):
     """
-    A transformation that uses basic Python type coercion
+    A base class for transformations that use basic Python type coercion
 
     """
 
@@ -240,7 +258,10 @@ class Bool(CoerceType):
 
 
 class Concat(Transformation):
+    """
+    Concat some strings into a single string.
 
+    """
     def __init__(self, *args, **kwargs):
         super(Concat, self).__init__(*args, **kwargs)
         self.strict = kwargs.get('strict', False)
@@ -252,13 +273,19 @@ class Concat(Transformation):
 
 
 class Do(Transformation):
+    """
+    Do an arbitrary thing to something.
 
+    """
     def function(self, source, *call_args):  # source ignored
         return call_args[0](*call_args[1:])
 
 
 class ParseDate(Transformation):
+    """
+    Parse a date-ish string into a datetime object.
 
+    """
     DEFAULT_TIMEZONE = utc
 
     @property

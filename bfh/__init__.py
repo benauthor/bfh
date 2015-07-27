@@ -1,3 +1,7 @@
+"""
+BFH: a library for mapping schemas to other schemas.
+
+"""
 from __future__ import absolute_import
 
 from .common import nullish
@@ -16,12 +20,15 @@ __all__ = [
 
 class Schema(SchemaInterface):
     """
-    A base class for defining your schemas.
+    A base class for defining your schemas:
 
-    Inherit this and add some fields:
+    Declare the shape of an object you expect to handle.
+
+    Just inherit this and add some fields:
 
         class Animal(Schema):
             name = UnicodeField()
+            type = UnicodeField()
             legs = IntegerField()
             noise = UnicodeField()
 
@@ -100,7 +107,15 @@ class Schema(SchemaInterface):
 
 
 class GenericSchema(Schema):
+    """
+    A generic schema to use when none is specified.
+
+    """
     def __init__(self, as_dict):
+        """
+        Args:
+            as_dict (dict) - a blob from which to infer a schema
+        """
         self.__dict__ = as_dict
         self._field_names = as_dict.keys()
 
@@ -110,18 +125,40 @@ class GenericSchema(Schema):
         return self.__dict__[name]
 
     def validate(self):
+        """
+        *shrug*
+
+        """
         return True
 
 
 class Mapping(MappingInterface):
+    """
+    A base class for defining your mappings:
 
+    Declare a transformation from one shape to another shape.
+
+    Just inherit this and add some fields:
+
+        class DogToAnimal(Mapping):
+            source_schema = Dog
+            target_schema = Animal
+
+            name = Get('dogname')
+            type = Const('dog')
+            legs = Const(4)
+            noise = Const('woof!')
+
+    """
     def apply(self, blob):
         """
-        This is going to take blob and create an instance of source schema.
+        Take the mapping and push a blob through it.
 
-        If no source schema is specified, use a generic schema.
+        Args:
+            blob (dict or Schema) - the thing to transform
 
-        TODO validate (optionally) if source and target specified?
+        Returns:
+            instance of `self.target_schema` if declared, or GenericSchema
         """
         if self.source_schema is None:
             loaded_source = blob

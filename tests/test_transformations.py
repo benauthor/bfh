@@ -42,10 +42,12 @@ class TestAll(TestCase):
         allof = All()(m)
         self.assertEqual(extras, allof)
 
-        # without a schema, we obvs pass everything
+        # without a schema, we obvs have to pass everything
         schemaless = All(strict=True)(extras)
         self.assertEqual(extras, schemaless)
 
+        # the 'strict' flag means extra kwargs outside the schema
+        # get filtered out.
         filtered = All(strict=True)(m)
         self.assertEqual({"wow": 1}, filtered)
 
@@ -208,7 +210,7 @@ class TestParseDate(TestCase):
 
 
 class TestSubmapping(TestCase):
-    def test_can_use_submaps_for_root(self):
+    def test_can_pass_all_to_submap(self):
         source = {
             "flat": 1,
             "nice": 2
@@ -259,6 +261,7 @@ class TestSubmapping(TestCase):
 
 class TestIdempotence(TestCase):
     def test_idempotent(self):
+        """Stateful is hateful"""
         class Hm(Mapping):
             wow = Int(Get('wow'), required=False)
 

@@ -31,6 +31,7 @@ class TestFieldValidation(TestCase):
             field.validate(None)
 
     def test_optional_validation(self):
+        """Fields are required by default but can be made optional"""
         field = IntegerField(required=False)
         assert field.validate(None)
 
@@ -109,7 +110,6 @@ class TestFieldValidation(TestCase):
         with self.assertRaises(Invalid):
             field.validate([{"wat": "whatever"}])
 
-
     def test_object_validation(self):
         field = ObjectField()
 
@@ -178,8 +178,8 @@ class TestFieldValidation(TestCase):
         with self.assertRaises(Invalid):
             field.validate(SomeSchema(inner="wow"))
 
-
     def test_required_within_not_required_validation(self):
+        """A required child of an empty optional schema shouldn't invalidate"""
         class MostIn(Schema):
             foo = IntegerField()
 
