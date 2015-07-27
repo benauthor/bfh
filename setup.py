@@ -10,7 +10,7 @@ setup(
     install_requires=[
         "python-dateutil",
     ],
-    author_email="",
+    author_email="maccruiskeen@gmail.com",
     url="https://github.com/benauthor/bfh",
     classifiers=[
         "Development Status :: 3 - Alpha",
